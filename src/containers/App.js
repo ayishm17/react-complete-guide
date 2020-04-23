@@ -19,13 +19,33 @@ import Cockpit from '../components/Cockpit/Cockpit';
 // `;
 
 class App extends Component {
-  state = {
+
+  constructor(props) {  //first lifecycle hook
+    super(props);
+    console.log('[App.js] constructor');
+    //this.state can initialize state here too
+  }
+
+  state = {       //modern syntax will call the constructor in background
     persons: [
       { id: 'ascx', name: 'Mirah', age: '22'},
       { id: 'saxzc', name: 'Hafsa', age: '22'},
       { id: 'aasx', name: 'Ayishm', age: '23'}
     ],
     showPersons: false
+  };
+
+  static getDerivedStateFromProps(props, state) {    //second hook
+    console.log('[App.js] getDerivedStateFromProps', props);
+    return state;
+  }
+
+  componentWillMount() {
+    console.log('[App.js] componentWillMount');
+  }
+
+  componentDidMount() {
+    console.log('[App.js] componentDidMount');
   }
 
   nameChangedHandler = (event, id) => {
@@ -70,7 +90,7 @@ class App extends Component {
     //     color: 'black'
     //   }
     // }
-
+    console.log('[App.js] render');    //third hook
     let persons = null;
 
     if (this.state.showPersons) {
