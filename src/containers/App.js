@@ -3,6 +3,9 @@ import Persons from '../components/Persons/Persons';
 //import styled from 'styled-components';
 import classes from './App.css';
 import Cockpit from '../components/Cockpit/Cockpit';
+import withClass from '../hoc/withClass';
+import Aux from '../hoc/Aux';
+import AuthContext from '../context/auth-context';
 
 // const StyledButton = styled.button`   //style-components example
 //   background-color: ${ props => props.alt ? 'red' : 'green' };
@@ -28,12 +31,14 @@ class App extends Component {
 
   state = {       //modern syntax will call the constructor in background
     persons: [
-      { id: 'ascx', name: 'Mirah', age: '22'},
-      { id: 'saxzc', name: 'Hafsa', age: '22'},
-      { id: 'aasx', name: 'Ayishm', age: '23'}
+      { id: 'ascx', name: 'Mirah', age: 22},
+      { id: 'saxzc', name: 'Hafsa', age: 22},
+      { id: 'aasx', name: 'Ayishm', age: 23}
     ],
     showPersons: false,
-    showCockpit: true
+    showCockpit: true,
+    changeCounter: 0,
+    authenticated: false
   };
 
   static getDerivedStateFromProps(props, state) {    //second hook
@@ -72,7 +77,12 @@ class App extends Component {
 
     const persons = [...this.state.persons];
     persons[personIndex] = person;
-    this.setState({persons: persons});
+    this.setState((prevState, props) => {
+      return { 
+        persons: persons,
+        changeCounter: prevState.changeCounter + 1
+      };
+    });
 
   }
 
@@ -86,6 +96,10 @@ class App extends Component {
   togglePersonsHandler = () => {
     const doesShow = this.state.showPersons;
     this.setState({showPersons: !doesShow});
+  }
+
+  loginHandler = () => {
+    this.setState({authenticated: true});
   }
 
   render () {
@@ -106,9 +120,11 @@ class App extends Component {
 
     if (this.state.showPersons) {
       persons = <Persons 
-            persons={this.state.persons}
-            clicked={this.deletePersonHandler}
-            changed={this.nameChangedHandler} />;
+                  persons={this.state.persons}
+                  clicked={this.deletePersonHandler}
+                  changed={this.nameChangedHandler} 
+                  isAuthenticated={this.state.authenticated}
+                />;
       // style.backgroundColor = 'red';  //changing inline style constant
       // style[":hover"] = {
       //   backgroundColor: 'salmon',
@@ -118,24 +134,33 @@ class App extends Component {
     }
 
     return (
-      <div className={classes.App}>
+      // <WithClass classes={classes.App}>  for first function in WithClass
+      <Aux>
         <button onClick={ () => {
           this.setState({ showCockpit: false });
         } }>
           Remove Cockpit
         </button>
-        { this.state.showCockpit ? (
-          <Cockpit
-            title={this.props.appTitle}
-            showPersons={this.state.showPersons}
-            personsLength={this.state.persons.length}
-            clicked={this.togglePersonsHandler} 
-          />
-        ) : null }
-        {persons}
-      </div>
+        <AuthContext.Provider 
+          value={{
+            authenticated: this.state.authenticated,
+            login: this.loginHandler
+          }}
+        >
+          { this.state.showCockpit ? (
+            <Cockpit
+              title={this.props.appTitle}
+              showPersons={this.state.showPersons}
+              personsLength={this.state.persons.length}
+              clicked={this.togglePersonsHandler}
+            />
+          ) : null }
+          {persons}
+        </AuthContext.Provider>
+      {/* </WithClass> */}
+      </Aux>
     );
   }
 }
 
-export default App;
+export default withClass(App, classes.App);
